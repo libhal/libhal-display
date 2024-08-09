@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "libhal-__device__/__device__.hpp"
+#include "libhal-display/display.hpp"
 
-namespace hal::__device__ {  // NOLINT
-}  // namespace hal::__device__
+namespace hal::display {
+}  // namespace hal::display
