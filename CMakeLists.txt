@@ -13,15 +13,15 @@
 # limitations under the License.
 cmake_minimum_required(VERSION 3.15)
 
-project(libhal-__device__ LANGUAGES CXX)
+project(libhal-display LANGUAGES CXX)
 
 libhal_test_and_make_library(
-  LIBRARY_NAME libhal-__device__
+  LIBRARY_NAME libhal-display
 
   SOURCES
-  src/__device__.cpp
+  src/display.cpp
 
   TEST_SOURCES
-  tests/__device__.test.cpp
+  tests/display.test.cpp
   tests/main.test.cpp
 )
