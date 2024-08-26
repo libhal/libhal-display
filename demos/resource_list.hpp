@@ -19,6 +19,7 @@
 #include <libhal/functional.hpp>
 #include <libhal/output_pin.hpp>
 #include <libhal/serial.hpp>
+#include <libhal/spi.hpp>
 #include <libhal/steady_clock.hpp>
 
 struct resource_list
@@ -27,6 +28,7 @@ struct resource_list
   std::optional<hal::serial*> console;
   std::optional<hal::steady_clock*> clock;
   std::optional<hal::output_pin*> status_led;
+  std::optional<hal::spi*> spi;
   // Add more driver interfaces here ...
 };
 
