@@ -6,7 +6,7 @@
 
 #include <libhal-display/ws2812b.hpp>
 
-#include "../resource_list.hpp"
+#include <resource_list.hpp>
 
 template<std::size_t PixelCount>
 void set_all_pixel(hal::display::ws2812b_spi_frame<PixelCount>& p_frame, hal::display::rgb888& p_pixel);
@@ -24,7 +24,7 @@ void application (resource_list& p_map)
     auto& chip_select = *p_map.status_led.value();
     auto& spi =*p_map.spi.value();
 
-    hal::print(console, "Demo Application Starting...\n");
+    hal::print(console, "Demo Application Starting...\n\n");
 
     // Set chip_select high
     chip_select.level(true);
@@ -62,7 +62,7 @@ void application (resource_list& p_map)
     hal::delay(clock, std::chrono::milliseconds(3000));
 
     // Example of using the set_range_ws2812b_frame_pixel function
-    hal::print(console, "Setting the span of bytes 0-23 (pixel index 1-2) to the color blue...\n");
+    hal::print(console, "Setting the span of bytes 0-23 (pixel index 0-1) to the color blue...\n");
     std::span<hal::byte> frame_span(spi_frame.data);
     std::span<hal::byte> sub_span = frame_span.subspan(0,24); 
     set_range_ws2812b_frame_pixel(sub_span, blue_color);
@@ -89,66 +89,19 @@ void application (resource_list& p_map)
 
 template<std::size_t PixelCount>
 void set_all_pixel(hal::display::ws2812b_spi_frame<PixelCount>& p_frame, hal::display::rgb888& p_pixel) {
-    hal::byte current_byte_within_pixel, shift_byte;
-
-    uint32_t formatted_color_data = p_pixel.g << 16 | p_pixel.r << 8 | p_pixel.b;
-
-    for (std::size_t  current_pixel = 0; current_pixel < PixelCount; current_pixel++) {
-        current_byte_within_pixel = 0;
-        shift_byte = 1;
-        
-        for (int bit_shift_amount = 23; bit_shift_amount >= 0; bit_shift_amount--) {
-            hal::byte formatted_data_current_bit = (formatted_color_data >> bit_shift_amount) & 0x01;
-            hal::byte bit_encoding = (formatted_data_current_bit == 1) ? 0b1110 : 0b1000;
-
-            if (shift_byte == 1) {
-                p_frame.data[current_pixel * p_frame.bytes_to_store_one_pixels_data + current_byte_within_pixel] &= 0x0F;
-                p_frame.data[current_pixel * p_frame.bytes_to_store_one_pixels_data + current_byte_within_pixel] |= (bit_encoding << 4);
-            }
-            else if (shift_byte == 0) {
-                p_frame.data[current_pixel * p_frame.bytes_to_store_one_pixels_data + current_byte_within_pixel] &= 0xF0;
-                p_frame.data[current_pixel * p_frame.bytes_to_store_one_pixels_data + current_byte_within_pixel] |= bit_encoding;
-            }
-
-            shift_byte = 1 - shift_byte;
-
-            if (shift_byte == 1) {
-                current_byte_within_pixel++;
-            }
-        }
-    }
+    set_range_pixel(p_frame, p_pixel,  0, (PixelCount - 1));
 }
 
 template<std::size_t PixelCount>
 void set_range_pixel(hal::display::ws2812b_spi_frame<PixelCount>& p_frame, hal::display::rgb888& p_pixel, uint8_t p_start_pixel, uint8_t p_end_pixel) {
-    hal::byte current_byte_within_pixel, shift_byte;
 
-    uint32_t formatted_color_data = p_pixel.g << 16 | p_pixel.r << 8 | p_pixel.b;
+    std::size_t num_pixels = (p_end_pixel - p_start_pixel + 1);
+    constexpr std::size_t bytes_per_pixel = 12;
+    std::size_t num_bytes = num_pixels * bytes_per_pixel;
 
-    for (std::size_t  current_pixel = p_start_pixel; current_pixel <= p_end_pixel; current_pixel++) {
-        current_byte_within_pixel = 0;
-        shift_byte = 1;
-        
-        for (int bit_shift_amount = 23; bit_shift_amount >= 0; bit_shift_amount--) {
-            hal::byte formatted_data_current_bit = (formatted_color_data >> bit_shift_amount) & 0x01;
-            hal::byte bit_encoding = (formatted_data_current_bit == 1) ? 0b1110 : 0b1000;
-
-            if (shift_byte == 1) {
-                p_frame.data[current_pixel * p_frame.bytes_to_store_one_pixels_data + current_byte_within_pixel] &= 0x0F;
-                p_frame.data[current_pixel * p_frame.bytes_to_store_one_pixels_data + current_byte_within_pixel] |= (bit_encoding << 4);
-            }
-            else if (shift_byte == 0) {
-                p_frame.data[current_pixel * p_frame.bytes_to_store_one_pixels_data + current_byte_within_pixel] &= 0xF0;
-                p_frame.data[current_pixel * p_frame.bytes_to_store_one_pixels_data + current_byte_within_pixel] |= bit_encoding;
-            }
-
-            shift_byte = 1 - shift_byte;
-
-            if (shift_byte == 1) {
-                current_byte_within_pixel++;
-            }
-        }
-    }
+    std::span<hal::byte> frame_span(p_frame.data);
+    std::span<hal::byte> sub_span = frame_span.subspan((p_start_pixel * bytes_per_pixel), num_bytes); 
+    set_range_ws2812b_frame_pixel(sub_span, p_pixel);
 }
 
 void set_range_ws2812b_frame_pixel(std::span<hal::byte>& p_frame, hal::display::rgb888 p_pixel) {

@@ -23,7 +23,11 @@ ws2812b::ws2812b(hal::spi& p_spi,
     : m_spi(&p_spi)
     , m_chip_select(p_chip_select ? p_chip_select : &hal::soft::default_inert_output_pin())
     {
-
+        m_spi->configure(hal::spi::settings{
+                            4.0_MHz,
+                            {false},
+                            {false}
+                        });
     }
 
 void ws2812b::update(std::span<hal::byte> p_data) {

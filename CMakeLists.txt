@@ -26,6 +26,9 @@ libhal_test_and_make_library(
   tests/display.test.cpp
   tests/main.test.cpp
 
+  INCLUDES
+  .
+
   LINK_LIBRARIES
   libhal::soft
    
