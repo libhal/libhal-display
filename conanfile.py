@@ -34,7 +34,8 @@ class libhal_display_conan(ConanFile):
         # consumers get the libhal and libhal-util headers downstream.
         bootstrap = self.python_requires["libhal-bootstrap"]
         bootstrap.module.add_library_requirements(self)
-
+        self.requires("libhal-soft/[^5.3.0]")
+            
     def package_info(self):
         self.cpp_info.libs = ["libhal-display"]
         self.cpp_info.set_property("cmake_target_name", "libhal::display")
