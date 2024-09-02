@@ -54,6 +54,11 @@ resource_list initialize_platform()
   spi_chip_select.level(true);
 
   hal::spi* spi = nullptr;
+  static hal::spi::settings spi_settings{
+    .clock_rate = 250.0_kHz,
+    .clock_polarity = false,
+    .clock_phase = true,
+  };
 
   if constexpr (use_bit_bang_spi) {
     static hal::stm32f1::output_pin sck('A', 5);
@@ -63,21 +68,11 @@ resource_list initialize_platform()
                                                             .copi = &copi,
                                                             .cipo = &cipo };
 
-    static hal::spi::settings bit_bang_spi_settings{
-      .clock_rate = 250.0_kHz,
-      .clock_polarity = false,
-      .clock_phase = true,
-    };
     static hal::soft::bit_bang_spi bit_bang_spi(
-      bit_bang_spi_pins, steady_clock, bit_bang_spi_settings);
+      bit_bang_spi_pins, steady_clock, spi_settings);
     spi = &bit_bang_spi;
   } else {
-    static hal::stm32f1::spi spi1(hal::bus<1>,
-                                  {
-                                    .clock_rate = 250.0_kHz,
-                                    .clock_polarity = false,
-                                    .clock_phase = false,
-                                  });
+    static hal::stm32f1::spi spi1(hal::bus<1>, spi_settings);
     spi = &spi1;
   }
 

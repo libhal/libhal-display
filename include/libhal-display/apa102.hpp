@@ -15,34 +15,35 @@
 #pragma once
 
 #include <array>
+#include <span>
 
 #include <libhal-soft/inert_drivers/inert_output_pin.hpp>
 #include <libhal-util/output_pin.hpp>
 #include <libhal-util/spi.hpp>
 
 namespace hal::display {
+
+struct apa102_pixel
+{
+  /// bits 7 - 5 must be all 1's, otherwise undefined behavior
+  hal::byte brightness = 0b1111'1111;
+  hal::byte blue = 0;
+  hal::byte green = 0;
+  hal::byte red = 0;
+};
+
+static_assert(4U == sizeof(apa102_pixel),
+              "APA102 Pixel structure must be 4 bytes in length");
 /**
  * @brief Contains data to send over SPI and information about size of the data
  * to send over
  *
  * @tparam LedCount - Number of LEDs to control
  */
-template<std::size_t LedCount>
-struct apa102_spi_frame
+template<std::size_t led_count>
+struct apa102_frame
 {
-  // each LED needs 1 byte for bightness and 1 byte each for red, green, and
-  // blue
-  static constexpr std::size_t led_frame_byte_count = 4;
-  static constexpr std::size_t array_length = LedCount * led_frame_byte_count;
-
-  std::array<hal::byte, array_length> data;
-};
-
-struct rgb_values
-{
-  hal::byte red;
-  hal::byte green;
-  hal::byte blue;
+  std::array<apa102_pixel, led_count> data;
 };
 
 /**
@@ -65,17 +66,18 @@ public:
   /**
    * @brief Update the state of the LEDs
    *
-   * @tparam LedCount - Number of LEDs to control
-   * @param p_frame_data Bytes to send to control LEDs
+   * @tparam LedCount - Number of LEDs to control is set implicitly, user should
+   * not set it manually
+   * @param p_spi_frame spi frame to send to control LEDs
    */
   template<std::size_t LedCount>
-  void update(std::array<hal::byte, LedCount>& p_frame_data)
+  void update(apa102_frame<LedCount>& p_spi_frame)
   {
-    update(std::span<hal::byte>(p_frame_data));
+    update(p_spi_frame.data);
   }
 
 private:
-  void update(std::span<hal::byte> p_data);
+  void update(std::span<apa102_pixel> p_data);
 
   hal::spi* m_spi;
 

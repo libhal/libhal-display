@@ -18,18 +18,39 @@
 
 #include "../resource_list.hpp"
 
+hal::byte build_brightness_byte(int p_brightness)
+{
+  hal::byte starting_bits = 0b11100000;
+  if (p_brightness > 31) {
+    p_brightness = 31;
+  }
+  return (starting_bits | p_brightness);
+}
+
 template<std::size_t PixelCount>
-void update_single(hal::display::rgb_values p_rgb,
-                   int p_brightnes,
+void update_single(hal::display::apa102_pixel& p_rgb,
+                   unsigned p_brightness,
                    size_t p_led_number,
-                   std::span<hal::byte> p_led_frames);
+                   hal::display::apa102_frame<PixelCount>& p_led_frames)
+{
+  if (p_led_number < PixelCount) {
+    p_led_frames.data[p_led_number].brightness =
+      build_brightness_byte(p_brightness);
+    p_led_frames.data[p_led_number].blue = p_rgb.blue;
+    p_led_frames.data[p_led_number].green = p_rgb.green;
+    p_led_frames.data[p_led_number].red = p_rgb.red;
+  }
+}
 
 template<std::size_t PixelCount>
-void update_all(std::span<hal::display::rgb_values> p_leds,
-                int p_brightnes,
-                std::span<hal::byte> p_led_frames);
-
-hal::byte build_brightness_byte(int p_brightnes);
+void update_all(std::span<hal::display::apa102_pixel> p_leds,
+                unsigned p_brightness,
+                hal::display::apa102_frame<PixelCount>& p_led_frames)
+{
+  for (size_t i = 0; i < p_leds.size(); i++) {
+    update_single(p_leds[i], p_brightness, i, p_led_frames);
+  }
+}
 
 void application(resource_list& p_map)
 {
@@ -44,120 +65,84 @@ void application(resource_list& p_map)
 
   // variables for LEDs
   constexpr std::size_t led_count = 4;
-  hal::display::apa102_spi_frame<led_count> spi_frame;
-  int brightness = 1;
+  hal::display::apa102_frame<led_count> apa_frame;
+  unsigned brightness = 1;
 
   // predefined colors
-  hal::display::rgb_values red{ 0xFF, 0x00, 0x00 };
-  hal::display::rgb_values green{ 0x00, 0xFF, 0x00 };
-  hal::display::rgb_values blue{ 0x00, 0x00, 0xFF };
-  hal::display::rgb_values white{ 0xFF, 0xFF, 0xFF };
-  std::array<hal::display::rgb_values, led_count> all_off = {
-    { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } }
-  };
-  std::array<hal::display::rgb_values, led_count> rgb_array = {
-    { { 255, 0, 0 }, { 125, 0, 125 }, { 0, 0, 255 }, { 0, 125, 125 } }
+  hal::display::apa102_pixel red{ .blue = 0x00, .green = 0x00, .red = 0xFF };
+  hal::display::apa102_pixel green{ .blue = 0x00, .green = 0xFF, .red = 0x00 };
+  hal::display::apa102_pixel blue{ .blue = 0xFF, .green = 0x00, .red = 0x00 };
+  hal::display::apa102_pixel white{ .blue = 0xFF, .green = 0xFF, .red = 0xFF };
+  std::array<hal::display::apa102_pixel, led_count> all_off{};
+
+  std::array<hal::display::apa102_pixel, led_count> rgb_array = {
+    { white, blue, green, red }
   };
 
   hal::print(console, "Demo Application Starting...\n\n");
   hal::display::apa102 led_strip(spi, chip_select);
   while (true) {
     // reset LEDs by turning them all off
-    update_all<led_count>(all_off, brightness, spi_frame.data);
-    hal::print<32>(console, "Brightness byte: 0x%02X ", spi_frame.data[0]);
+    update_all(all_off, brightness, apa_frame);
 
     // update one at a time, all other LEDs should remain the same state
     // added delays to visually see individual activations
     hal::print(console, "Updating single LEDS\n");
-    update_single<led_count>(red, brightness, 0, spi_frame.data);
-    led_strip.update(spi_frame.data);
+    update_single(red, brightness, 0, apa_frame);
+    led_strip.update(apa_frame);
     hal::delay(clock, 500ms);
-    update_single<led_count>(green, brightness, 1, spi_frame.data);
-    led_strip.update(spi_frame.data);
+    update_single(green, brightness, 1, apa_frame);
+    led_strip.update(apa_frame);
     hal::delay(clock, 500ms);
-    update_single<led_count>(blue, brightness, 2, spi_frame.data);
-    led_strip.update(spi_frame.data);
+    update_single(blue, brightness, 2, apa_frame);
+    led_strip.update(apa_frame);
     hal::delay(clock, 500ms);
-    update_single<led_count>(white, brightness, 3, spi_frame.data);
-    led_strip.update(spi_frame.data);
+    update_single(white, brightness, 3, apa_frame);
+    led_strip.update(apa_frame);
 
     // update all LEDs at once
     hal::delay(clock, 3s);
     hal::print(console, "Updating all LEDS\n");
-    update_all<led_count>(rgb_array, brightness, spi_frame.data);
-    led_strip.update(spi_frame.data);
+    update_all(rgb_array, brightness, apa_frame);
+    led_strip.update(apa_frame);
 
     // cycle through RGB colors, start and end with red
     hal::delay(clock, 3s);
-    hal::display::rgb_values rainbow = red;
+    hal::display::apa102_pixel rainbow = red;
     hal::print(console, "Rainbow Cycle\n");
     for (int i = 0; i <= 255; i++) {
       // decrease red, increase blue
       rainbow.red = 255 - i;
       rainbow.blue = i;
-      std::array<hal::display::rgb_values, led_count> rainbow_array = {
+      std::array<hal::display::apa102_pixel, led_count> rainbow_array = {
         { rainbow, rainbow, rainbow, rainbow }
       };
-      update_all<led_count>(rainbow_array, brightness, spi_frame.data);
-      led_strip.update(spi_frame.data);
+      update_all(rainbow_array, brightness, apa_frame);
+      led_strip.update(apa_frame);
       hal::delay(clock, 10ms);
     }
     for (int i = 0; i <= 255; i++) {
       // decrease blue, increase green
       rainbow.blue = 255 - i;
       rainbow.green = i;
-      std::array<hal::display::rgb_values, led_count> rainbow_array = {
+      std::array<hal::display::apa102_pixel, led_count> rainbow_array = {
         { rainbow, rainbow, rainbow, rainbow }
       };
-      update_all<led_count>(rainbow_array, brightness, spi_frame.data);
-      led_strip.update(spi_frame.data);
+      update_all(rainbow_array, brightness, apa_frame);
+      led_strip.update(apa_frame);
       hal::delay(clock, 10ms);
     }
     for (int i = 0; i <= 255; i++) {
       // decrease green, increase red
       rainbow.green = 255 - i;
       rainbow.red = i;
-      std::array<hal::display::rgb_values, led_count> rainbow_array = {
+      std::array<hal::display::apa102_pixel, led_count> rainbow_array = {
         { rainbow, rainbow, rainbow, rainbow }
       };
-      update_all<led_count>(rainbow_array, brightness, spi_frame.data);
-      led_strip.update(spi_frame.data);
+      update_all(rainbow_array, brightness, apa_frame);
+      led_strip.update(apa_frame);
       hal::delay(clock, 10ms);
     }
   }
   hal::delay(clock, 50ms);
-}
-
-template<std::size_t PixelCount>
-void update_single(hal::display::rgb_values p_rgb,
-                   int p_brightness,
-                   size_t p_led_number,
-                   std::span<hal::byte> p_led_frames)
-{
-  size_t index = p_led_number * 4;
-  p_led_frames[index] = build_brightness_byte(p_brightness);
-  p_led_frames[index + 1] = p_rgb.blue;
-  p_led_frames[index + 2] = p_rgb.green;
-  p_led_frames[index + 3] = p_rgb.red;
-}
-
-template<std::size_t PixelCount>
-void update_all(std::span<hal::display::rgb_values> p_leds,
-                int p_brightness,
-                std::span<hal::byte> p_led_frames)
-{
-  for (size_t i = 0; i < p_leds.size(); i++) {
-    p_led_frames[i * 4] = build_brightness_byte(p_brightness);
-    p_led_frames[(i * 4) + 1] = p_leds[i].blue;
-    p_led_frames[(i * 4) + 2] = p_leds[i].green;
-    p_led_frames[(i * 4) + 3] = p_leds[i].red;
-  }
-}
-
-hal::byte build_brightness_byte(int p_brightness)
-{
-  if (p_brightness > 31) {
-    p_brightness = 31;
-  }
-  return (0b11100000 | p_brightness);
 }

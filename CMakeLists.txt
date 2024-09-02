@@ -25,6 +25,7 @@ libhal_test_and_make_library(
   TEST_SOURCES
   tests/display.test.cpp
   tests/main.test.cpp
+  tests/apa102.test.cpp
 
   INCLUDES
   .
