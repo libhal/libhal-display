@@ -10,6 +10,7 @@ apa102::apa102(hal::spi& p_spi, hal::output_pin& p_chip_select)
   : m_spi(&p_spi)
   , m_chip_select(&p_chip_select)
 {
+  // 1 MHz is max speed LEDs can handle
   m_spi->configure(hal::spi::settings{ 1.0_MHz, { false }, { false } });
 }
 
