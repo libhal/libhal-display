@@ -18,7 +18,7 @@
 
 #include "../resource_list.hpp"
 
-hal::byte build_brightness_byte(int p_brightness)
+hal::byte build_brightness_byte(unsigned p_brightness)
 {
   hal::byte starting_bits = 0b11100000;
   if (p_brightness > 31) {
@@ -34,11 +34,11 @@ void update_single(hal::display::apa102_pixel& p_rgb,
                    hal::display::apa102_frame<PixelCount>& p_led_frames)
 {
   if (p_led_number < PixelCount) {
-    p_led_frames.data[p_led_number].brightness =
+    p_led_frames.pixels[p_led_number].brightness =
       build_brightness_byte(p_brightness);
-    p_led_frames.data[p_led_number].blue = p_rgb.blue;
-    p_led_frames.data[p_led_number].green = p_rgb.green;
-    p_led_frames.data[p_led_number].red = p_rgb.red;
+    p_led_frames.pixels[p_led_number].blue = p_rgb.blue;
+    p_led_frames.pixels[p_led_number].green = p_rgb.green;
+    p_led_frames.pixels[p_led_number].red = p_rgb.red;
   }
 }
 

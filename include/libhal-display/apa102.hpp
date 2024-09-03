@@ -38,12 +38,12 @@ static_assert(4U == sizeof(apa102_pixel),
  * @brief Contains data to send over SPI and information about size of the data
  * to send over
  *
- * @tparam LedCount - Number of LEDs to control
+ * @tparam pixel_count - Number of pixels to control
  */
-template<std::size_t led_count>
+template<std::size_t pixel_count>
 struct apa102_frame
 {
-  std::array<apa102_pixel, led_count> data;
+  std::array<apa102_pixel, pixel_count> pixels;
 };
 
 /**
@@ -66,14 +66,14 @@ public:
   /**
    * @brief Update the state of the LEDs
    *
-   * @tparam LedCount - Number of LEDs to control is set implicitly, user should
-   * not set it manually
+   * @tparam pixel_count - Number of pixels to control is set implicitly, user
+   * should not set it manually
    * @param p_spi_frame spi frame to send to control LEDs
    */
-  template<std::size_t LedCount>
-  void update(apa102_frame<LedCount>& p_spi_frame)
+  template<std::size_t pixel_count>
+  void update(apa102_frame<pixel_count>& p_spi_frame)
   {
-    update(p_spi_frame.data);
+    update(p_spi_frame.pixels);
   }
 
 private:
