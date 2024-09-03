@@ -28,7 +28,7 @@ struct resource_list
   std::optional<hal::serial*> console;
   std::optional<hal::steady_clock*> clock;
   std::optional<hal::output_pin*> status_led;
-  std::optional<hal::spi*> spi;
+  std::optional<hal::spi*> spi = std::nullopt;
   std::optional<hal::output_pin*> spi_chip_select;
   // Add more driver interfaces here ...
 };
