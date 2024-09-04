@@ -20,8 +20,19 @@ libhal_test_and_make_library(
 
   SOURCES
   src/display.cpp
+  src/apa102.cpp
 
   TEST_SOURCES
   tests/display.test.cpp
   tests/main.test.cpp
+  tests/apa102.test.cpp
+
+  INCLUDES
+  .
+
+  LINK_LIBRARIES
+  libhal::soft
+
+  PACKAGES
+  libhal-soft
 )
