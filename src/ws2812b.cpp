@@ -13,27 +13,22 @@
 // limitations under the License.
 
 #include <libhal-display/ws2812b.hpp>
-
 #include <libhal-util/spi.hpp>
 
 namespace hal::display {
 
-ws2812b::ws2812b(hal::spi& p_spi, 
-                 hal::output_pin* p_chip_select)
-    : m_spi(&p_spi)
-    , m_chip_select(p_chip_select ? p_chip_select : &hal::soft::default_inert_output_pin())
-    {
-        m_spi->configure(hal::spi::settings{
-                            4.0_MHz,
-                            {false},
-                            {false}
-                        });
-    }
-
-void ws2812b::update(std::span<hal::byte> p_data) {
-    m_chip_select->level(false);
-    hal::write(*m_spi, p_data);
-    m_chip_select->level(true);
+ws2812b::ws2812b(hal::spi& p_spi, hal::output_pin& p_chip_select)
+  : m_spi(&p_spi)
+  , m_chip_select(&p_chip_select)
+{
+  m_spi->configure(hal::spi::settings{ 4.0_MHz, { false }, { false } });
 }
 
-} // namespace hal::display
+void ws2812b::update(std::span<hal::byte> p_data)
+{
+  m_chip_select->level(false);
+  hal::write(*m_spi, p_data);
+  m_chip_select->level(true);
+}
+
+}  // namespace hal::display
