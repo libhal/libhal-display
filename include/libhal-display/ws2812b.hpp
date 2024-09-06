@@ -63,7 +63,11 @@ public:
   /**
    * @brief Construct a ws2812b driver.
    *
-   * @param p_spi - The driver for the SPI bus the ws2812b is connected to.
+   * @param p_spi - The driver for the SPI bus the ws2812b is connected to. The
+   * SPI driver MUST support a 4.0MHz clock rate, as this clock rate is
+   * specifically used to generate the proper pulse widths for sending the data.
+   * If 4.0MHz is not supported, then the device may show incorrect colors, or
+   * fail to work at all.
    * @param p_chip_select - The driver for the output pin to be used as the chip
    * select if the devices data line is connected to a multiplexer/switch.
    * Defaults to an inert output pin if one is not provided.
