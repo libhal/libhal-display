@@ -19,6 +19,7 @@ project(demos LANGUAGES CXX)
 libhal_build_demos(
   DEMOS
   display
+  apa102
   ws2812b
 
   INCLUDES

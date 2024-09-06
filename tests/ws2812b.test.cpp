@@ -12,11 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace hal::display {
-extern void display_test();
-}  // namespace hal::display
-
-int main()
-{
-  hal::display::display_test();
-}
+#include <libhal-display/ws2812b.hpp>
