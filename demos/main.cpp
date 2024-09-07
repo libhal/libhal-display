@@ -23,8 +23,7 @@ resource_list resources{};
 
 [[noreturn]] void terminate_handler() noexcept
 {
-
-  if (not resources.status_led && not resources.console) {
+  if (not resources.status_led && not resources.clock) {
     // spin here until debugger is connected
     while (true) {
       continue;
@@ -51,16 +50,10 @@ resource_list resources{};
 
 int main()
 {
-  try {
-    resources = initialize_platform();
-  } catch (...) {
-    while (true) {
-      // halt here and wait for a debugger to connect
-      continue;
-    }
-  }
-
+  // Setup terminate handler in case initialize platform throws
   hal::set_terminate(terminate_handler);
+
+  initialize_platform(resources);
 
   try {
     application(resources);
