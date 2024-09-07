@@ -12,28 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <libhal-armcortex/dwt_counter.hpp>
-#include <libhal-armcortex/startup.hpp>
-#include <libhal-armcortex/system_control.hpp>
-#include <libhal-lpc40/clock.hpp>
-#include <libhal-lpc40/constants.hpp>
-#include <libhal-lpc40/output_pin.hpp>
-#include <libhal-lpc40/spi.hpp>
-#include <libhal-lpc40/uart.hpp>
+#include <libhal-arm-mcu/dwt_counter.hpp>
+#include <libhal-arm-mcu/lpc40/clock.hpp>
+#include <libhal-arm-mcu/lpc40/constants.hpp>
+#include <libhal-arm-mcu/lpc40/output_pin.hpp>
+#include <libhal-arm-mcu/lpc40/spi.hpp>
+#include <libhal-arm-mcu/lpc40/uart.hpp>
+#include <libhal-arm-mcu/startup.hpp>
+#include <libhal-arm-mcu/system_control.hpp>
 #include <libhal-util/as_bytes.hpp>
 
-#include "../resource_list.hpp"
+#include <resource_list.hpp>
 
-resource_list initialize_platform()
+void initialize_platform(resource_list& p_resources)
 {
   using namespace hal::literals;
 
+  p_resources.reset = []() { hal::cortex_m::reset(); };
   // Set the MCU to the maximum clock speed
   hal::lpc40::maximum(12.0_MHz);
 
   // Create a hardware counter
   static hal::cortex_m::dwt_counter counter(
     hal::lpc40::get_frequency(hal::lpc40::peripheral::cpu));
+  p_resources.clock = &counter;
+
+  // Initialize LED pin
+  static hal::lpc40::output_pin led(1, 10);
+  p_resources.status_led = &led;
 
   static std::array<hal::byte, 64> uart0_buffer{};
   // Get and initialize UART0 for UART based logging
@@ -42,18 +48,9 @@ resource_list initialize_platform()
                                 hal::serial::settings{
                                   .baud_rate = 115200,
                                 });
-
-  // Initialize LED pin
-  static hal::lpc40::output_pin led(1, 10);
+  p_resources.console = &uart0;
 
   // Get and initialize SPI2 for SPI communication
   static hal::lpc40::spi spi2(2);
-
-  return {
-    .reset = []() { hal::cortex_m::reset(); },
-    .console = &uart0,
-    .clock = &counter,
-    .status_led = &led,
-    .spi = &spi2,
-  };
+  p_resources.spi = &spi2;
 }

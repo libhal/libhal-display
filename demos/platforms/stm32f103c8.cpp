@@ -29,37 +29,45 @@
 
 #include <resource_list.hpp>
 
-resource_list initialize_platform()
+void initialize_platform(resource_list& p_resources)
 {
   using namespace hal::literals;
 
   constexpr bool use_bit_bang_spi = true;
+
+  p_resources.reset = +[]() { hal::cortex_m::reset(); };
 
   // Set the MCU to the maximum clock speed
   hal::stm32f1::maximum_speed_using_internal_oscillator();
 
   static hal::cortex_m::dwt_counter counter(
     hal::stm32f1::frequency(hal::stm32f1::peripheral::cpu));
+  p_resources.clock = &counter;
+
+  static hal::stm32f1::output_pin led('C', 13);
+  p_resources.status_led = &led;
 
   static hal::stm32f1::uart uart1(hal::port<1>,
                                   hal::buffer<128>,
                                   hal::serial::settings{
                                     .baud_rate = 115200,
                                   });
+  p_resources.console = &uart1;
 
   auto cpu_frequency = hal::stm32f1::frequency(hal::stm32f1::peripheral::cpu);
   static hal::cortex_m::dwt_counter steady_clock(cpu_frequency);
-  static hal::stm32f1::output_pin led('C', 13);
+
   static hal::stm32f1::output_pin spi_chip_select('A', 4);
   spi_chip_select.level(true);
+  p_resources.spi_chip_select = &spi_chip_select;
 
-  hal::spi* spi = nullptr;
   static hal::spi::settings spi_settings{
     .clock_rate = 250.0_kHz,
     .clock_polarity = false,
     .clock_phase = true,
   };
 
+  hal::spi* spi = nullptr;
   if constexpr (use_bit_bang_spi) {
     static hal::stm32f1::output_pin sck('A', 5);
     static hal::stm32f1::output_pin copi('A', 6);
@@ -76,10 +84,5 @@ resource_list initialize_platform()
     spi = &spi1;
   }
 
-  return { .reset = +[]() { hal::cortex_m::reset(); },
-           .console = &uart1,
-           .clock = &counter,
-           .status_led = &led,
-           .spi = spi,
-           .spi_chip_select = &spi_chip_select };
+  p_resources.spi = spi;
 }
