@@ -21,11 +21,13 @@ libhal_test_and_make_library(
   SOURCES
   src/display.cpp
   src/apa102.cpp
+  src/ws2812b.cpp
 
   TEST_SOURCES
   tests/display.test.cpp
   tests/main.test.cpp
   tests/apa102.test.cpp
+  tests/ws2812b.test.cpp
 
   INCLUDES
   .

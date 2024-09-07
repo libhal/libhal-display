@@ -18,6 +18,7 @@
 #include <libhal-lpc40/clock.hpp>
 #include <libhal-lpc40/constants.hpp>
 #include <libhal-lpc40/output_pin.hpp>
+#include <libhal-lpc40/spi.hpp>
 #include <libhal-lpc40/uart.hpp>
 #include <libhal-util/as_bytes.hpp>
 
@@ -28,7 +29,7 @@ resource_list initialize_platform()
   using namespace hal::literals;
 
   // Set the MCU to the maximum clock speed
-  hal::lpc40::maximum(10.0_MHz);
+  hal::lpc40::maximum(12.0_MHz);
 
   // Create a hardware counter
   static hal::cortex_m::dwt_counter counter(
@@ -42,12 +43,17 @@ resource_list initialize_platform()
                                   .baud_rate = 115200,
                                 });
 
+  // Initialize LED pin
   static hal::lpc40::output_pin led(1, 10);
+
+  // Get and initialize SPI2 for SPI communication
+  static hal::lpc40::spi spi2(2);
 
   return {
     .reset = []() { hal::cortex_m::reset(); },
     .console = &uart0,
     .clock = &counter,
     .status_led = &led,
+    .spi = &spi2,
   };
 }
