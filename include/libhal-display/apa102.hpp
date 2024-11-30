@@ -17,7 +17,7 @@
 #include <array>
 #include <span>
 
-#include <libhal-soft/inert_drivers/inert_output_pin.hpp>
+#include <libhal-util/inert_drivers/inert_output_pin.hpp>
 #include <libhal-util/output_pin.hpp>
 #include <libhal-util/spi.hpp>
 
@@ -59,9 +59,8 @@ public:
    * @param p_spi the spi bus that controls the LEDs
    * @param p_chip_select output pin acting as the chip select for the spi bus
    */
-  apa102(
-    hal::spi& p_spi,
-    hal::output_pin& p_chip_select = hal::soft::default_inert_output_pin());
+  apa102(hal::spi& p_spi,
+         hal::output_pin& p_chip_select = hal::default_inert_output_pin());
 
   /**
    * @brief Update the state of the LEDs

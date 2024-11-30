@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <libhal-display/display.hpp>
+#include <libhal-display/apa102.hpp>
+#include <libhal-util/mock/spi.hpp>
 
 int main()
 {
-  hal::display::display_replace_me bar;
+  hal::mock_write_only_spi mock_spi;
+  hal::display::apa102 test_object(mock_spi);
 }

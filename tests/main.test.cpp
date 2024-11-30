@@ -13,10 +13,9 @@
 // limitations under the License.
 
 namespace hal::display {
-extern void display_test();
 }  // namespace hal::display
 
 int main()
 {
-  hal::display::display_test();
+  // [Position Dependent Test]:
 }
