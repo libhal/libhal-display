@@ -16,7 +16,7 @@
 
 #include <array>
 
-#include <libhal-soft/inert_drivers/inert_output_pin.hpp>
+#include <libhal-util/inert_drivers/inert_output_pin.hpp>
 #include <libhal-util/output_pin.hpp>
 #include <libhal-util/spi.hpp>
 
@@ -72,9 +72,8 @@ public:
    * select if the devices data line is connected to a multiplexer/switch.
    * Defaults to an inert output pin if one is not provided.
    */
-  ws2812b(
-    hal::spi& p_spi,
-    hal::output_pin& p_chip_select = hal::soft::default_inert_output_pin());
+  ws2812b(hal::spi& p_spi,
+          hal::output_pin& p_chip_select = hal::default_inert_output_pin());
 
   /**
    * @brief Update the pixels to the currently stored color information.
