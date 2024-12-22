@@ -26,15 +26,12 @@ class libhal_display_conan(ConanFile):
     topics = ("display", "libhal", "driver")
     settings = "compiler", "build_type", "os", "arch"
 
-    python_requires = "libhal-bootstrap/[^4.0.0]"
+    python_requires = "libhal-bootstrap/[^4.1.0]"
     python_requires_extend = "libhal-bootstrap.library"
 
     def requirements(self):
-        # Adds libhal and libhal-util as transitive headers, meaning library
-        # consumers get the libhal and libhal-util headers downstream.
-        bootstrap = self.python_requires["libhal-bootstrap"]
-        bootstrap.module.add_library_requirements(
-            self, override_libhal_util_version="5.3.0")
+        self.requires("libhal/[^4.9.0]", transitive_headers=True)
+        self.requires("libhal-util/[^5.3.0]", transitive_headers=True)
 
     def package_info(self):
         self.cpp_info.libs = ["libhal-display"]
