@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cstddef>
 #include <libhal-display/apa102.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
@@ -79,8 +80,8 @@ void application(resource_list& p_map)
   };
 
   std::array<hal::display::apa102_pixel, led_count> rgb_array;
-  for (uint8_t i = 0; i < led_count; i++) {
-    rgb_array[i] = predefined_colors[i % 4];
+  for (std::size_t i = 0; i < led_count; i++) {
+    rgb_array[i] = predefined_colors[i % predefined_colors.size()];
   }
 
   hal::print(console, "Demo Application Starting...\n\n");
@@ -92,8 +93,11 @@ void application(resource_list& p_map)
     hal::print(console, "Updating single LEDS\n");
     // update one at a time, all other LEDs should remain the same state
     // added delays to visually see individual activations
-    for (uint8_t i = 0; i < led_count; i++) {
-      update_single(predefined_colors[i % 4], brightness, i, apa_frame);
+    for (std::size_t i = 0; i < led_count; i++) {
+      update_single(predefined_colors[i % predefined_colors.size()],
+                    brightness,
+                    i,
+                    apa_frame);
       led_strip.update(apa_frame);
       hal::delay(clock, 500ms);
     }
@@ -106,6 +110,7 @@ void application(resource_list& p_map)
     hal::print(console, "Updating all LEDS\n");
     update_all(rgb_array, brightness, apa_frame);
     led_strip.update(apa_frame);
+    hal::delay(clock, 3s);
 
     // cycle through RGB colors, start and end with red
     hal::print(console, "Rainbow Cycle\n");
@@ -119,7 +124,7 @@ void application(resource_list& p_map)
       // decrease red, increase blue
       rainbow.red = 255 - i;
       rainbow.blue = i;
-      for (uint8_t x = 0; x < led_count; x++) {
+      for (std::size_t x = 0; x < led_count; x++) {
         rainbow_array[x] = rainbow;
       }
       update_all(rainbow_array, brightness, apa_frame);
@@ -131,7 +136,7 @@ void application(resource_list& p_map)
       rainbow.blue = 255 - i;
       rainbow.green = i;
 
-      for (uint8_t x = 0; x < led_count; x++) {
+      for (std::size_t x = 0; x < led_count; x++) {
         rainbow_array[x] = rainbow;
       }
       update_all(rainbow_array, brightness, apa_frame);
@@ -142,7 +147,7 @@ void application(resource_list& p_map)
       // decrease green, increase red
       rainbow.green = 255 - i;
       rainbow.red = i;
-      for (uint8_t x = 0; x < led_count; x++) {
+      for (std::size_t x = 0; x < led_count; x++) {
         rainbow_array[x] = rainbow;
       }
       update_all(rainbow_array, brightness, apa_frame);
