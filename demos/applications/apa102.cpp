@@ -115,8 +115,8 @@ void application(resource_list& p_map)
     // cycle through RGB colors, start and end with red
     hal::print(console, "Rainbow Cycle\n");
     hal::delay(clock, 3s);
-    hal::display::apa102_pixel rainbow = { .blue = 0xFF,
-                                           .green = 0xFF,
+    hal::display::apa102_pixel rainbow = { .blue = 0x00,
+                                           .green = 0x00,
                                            .red = 0xFF };
     std::array<hal::display::apa102_pixel, led_count> rainbow_array;
 
