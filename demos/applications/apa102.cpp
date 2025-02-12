@@ -90,18 +90,20 @@ void application(resource_list& p_map)
     // reset LEDs by turning them all off
     update_all(all_off, brightness, apa_frame);
 
-    hal::print(console, "Updating single LEDS\n");
-    // update one at a time, all other LEDs should remain the same state
-    // added delays to visually see individual activations
-    for (std::size_t i = 0; i < led_count; i++) {
-      update_single(predefined_colors[i % predefined_colors.size()],
-                    brightness,
-                    i,
-                    apa_frame);
-      led_strip.update(apa_frame);
-      hal::delay(clock, 500ms);
+    if constexpr (led_count > 1) {
+      hal::print(console, "Updating single LEDS\n");
+      // update one at a time, all other LEDs should remain the same state
+      // added delays to visually see individual activations
+      for (std::size_t i = 0; i < led_count; i++) {
+        update_single(predefined_colors[i % predefined_colors.size()],
+                      brightness,
+                      i,
+                      apa_frame);
+        led_strip.update(apa_frame);
+        hal::delay(clock, 500ms);
+      }
+      hal::delay(clock, 3s);
     }
-    hal::delay(clock, 3s);
 
     // reset LEDs by turning them all off
     update_all(all_off, brightness, apa_frame);
@@ -112,9 +114,11 @@ void application(resource_list& p_map)
     led_strip.update(apa_frame);
     hal::delay(clock, 3s);
 
+    // reset LEDs by turning them all off
+    update_all(all_off, brightness, apa_frame);
+
     // cycle through RGB colors, start and end with red
     hal::print(console, "Rainbow Cycle\n");
-    hal::delay(clock, 3s);
     hal::display::apa102_pixel rainbow = { .blue = 0x00,
                                            .green = 0x00,
                                            .red = 0xFF };
