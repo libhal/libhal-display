@@ -26,7 +26,7 @@ class libhal_display_conan(ConanFile):
     topics = ("display", "libhal", "driver")
     settings = "compiler", "build_type", "os", "arch"
 
-    python_requires = "libhal-bootstrap/[^4.1.0]"
+    python_requires = "libhal-bootstrap/[^4.2.1]"
     python_requires_extend = "libhal-bootstrap.library"
 
     def requirements(self):
